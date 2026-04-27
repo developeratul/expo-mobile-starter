@@ -8,8 +8,8 @@
     "ios": "expo start -c --ios",
     "web": "expo start -c --web",
     "clean": "rm -rf .expo node_modules",
-    "convex:dev": "dotenv -e .env.development -- convex dev",
-    "convex:dash": "dotenv -e .env.development -- convex dashboard",
+    "convex:dev": "dotenv -e .env.local -- convex dev",
+    "convex:dash": "dotenv -e .env.local -- convex dashboard",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

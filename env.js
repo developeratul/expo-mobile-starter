@@ -1,8 +1,8 @@
 const z = require('zod');
 
 const path = require('path');
-const APP_ENV = process.env.APP_ENV ?? 'development';
-const envPath = path.resolve(__dirname, `.env.${APP_ENV}`);
+const APP_ENV = process.env.APP_ENV ?? 'local';
+const envPath = path.resolve(__dirname, '.env.local');
 
 require('dotenv').config({
   path: envPath,
@@ -10,7 +10,7 @@ require('dotenv').config({
 
 // Client-side environment variables (exposed to Expo app)
 const client = z.object({
-  APP_ENV: z.enum(['development', 'staging', 'production']),
+  APP_ENV: z.enum(['local', 'staging', 'production']),
   EXPO_PUBLIC_CONVEX_URL: z.url(),
   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
 });
@@ -22,7 +22,7 @@ const buildTime = z.object({
 
 // Server-side secrets (used by Convex functions, not validated here)
 // These should be set in:
-// 1. .env.development (for local Convex dev)
+// 1. .env.local (for local Convex dev)
 // 2. Convex Dashboard → Settings → Environment Variables (for production)
 // Required: CLERK_WEBHOOK_SECRET
 
@@ -55,7 +55,7 @@ if (parsed.success === false) {
     "❌ Invalid environment variables:",
     parsed.error.flatten().fieldErrors,
 
-    `\n❌ Missing variables in .env.${APP_ENV} file, Make sure all required variables are defined in the .env.${APP_ENV} file.`,
+    `\n❌ Missing variables in .env.local, Make sure all required variables are defined in the .env.local file.`,
     `\n💡 Tip: If you recently updated the .env.${APP_ENV} file and the error still persists, try restarting the server with the -cc flag to clear the cache.`
   );
   throw new Error(

@@ -65,6 +65,6 @@ This list matches **`package.json`** dependencies. Add new sections here when yo
 | Technology | Purpose |
 |------------|---------|
 | Prettier + prettier-plugin-tailwindcss | Formatting |
-| dotenv-cli | Load `.env.development` for Convex CLI |
+| dotenv-cli | Load `.env.local` for Convex CLI |
 | react-native-svg-transformer | Import SVG as components |
 | `@expo/config` (dev) | TypeScript types for `app.config.ts` (version aligned with Expo SDK) |

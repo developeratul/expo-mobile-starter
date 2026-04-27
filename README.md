@@ -23,8 +23,10 @@ pnpm install
 Copy the example env and fill in values:
 
 ```bash
-cp .env.example .env.development
+cp .env.example .env.local
 ```
+
+If you already used `.env.development`, rename it to `.env.local` or merge its variables there.
 
 | Variable | Where to get it |
 |----------|-----------------|
@@ -43,7 +45,7 @@ cp .env.example .env.development
 pnpm convex:dev
 ```
 
-Add the printed `EXPO_PUBLIC_CONVEX_URL` and `CONVEX_DEPLOYMENT` to `.env.development` if not already set.
+Add the printed `EXPO_PUBLIC_CONVEX_URL` and `CONVEX_DEPLOYMENT` to `.env.local` if not already set.
 
 ### 4. Run the app
 
