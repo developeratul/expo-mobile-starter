@@ -1,0 +1,48 @@
+# Expo Mobile Starter — Core Rules
+
+## 🚨 MANDATORY FIRST STEP 🚨
+
+**READ THIS CHECKLIST BEFORE WRITING ANY CODE:**
+→ @AGENT-CHECKLIST.md ← 
+
+It tells you exactly which documentation to read based on your task.
+
+---
+
+This is a React Native + Expo app using Convex backend and Clerk auth.
+
+## Tech Stack
+- React Native + Expo Router
+- Convex (backend + real-time database)
+- Clerk (authentication)
+- NativeWind (Tailwind for React Native)
+- RN Reusables (shadcn/ui for React Native)
+- Zustand (UI state)
+- React Hook Form + Zod (forms)
+
+## Architecture
+- Frontend: Feature-based organization (features/{feature}/)
+- Backend: Domain-based organization (convex/{domain}/)
+- See @STRUCTURE_SUMMARY.md for complete structure
+
+## Critical Rules
+- File naming: kebab-case.tsx
+- Functions: Regular functions (not arrow)
+- Server state: Convex hooks (useQuery, useMutation)
+- UI state: Zustand stores
+- Never duplicate Convex data in local state
+- Always use validators in Convex functions
+- Components: React Native (View, Text, Pressable - not div, p, button)
+
+## Documentation Quick Links
+
+**ALWAYS read before implementing:**
+- @AGENT-CHECKLIST.md — Pre-implementation workflow
+- @AGENTS.md — Application guidelines and quick reference
+- @CONVENTIONS.mdc — Coding standards
+
+**Read when relevant:**
+- @FEATURE_TEMPLATE.md — Creating new features
+- @FORMS.md — Form patterns with React Hook Form + Zod
+- @convex_rules.mdc — Convex backend rules
+- @STRUCTURE_SUMMARY.md — Project organization decisions

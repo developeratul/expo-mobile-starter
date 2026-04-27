@@ -1,0 +1,847 @@
+# Coding Conventions
+
+This document outlines the coding standards for our application. These conventions ensure consistency across the codebase and make it easier for all team members to read and maintain code.
+
+---
+
+## Table of Contents
+
+1. [File Naming](#file-naming)
+2. [Function Declarations](#function-declarations)
+3. [Variable Naming](#variable-naming)
+4. [Project Structure](#project-structure)
+5. [Import Order](#import-order)
+6. [State Management](#state-management)
+7. [Conditional Logic](#conditional-logic)
+8. [Component Patterns](#component-patterns)
+9. [TypeScript Guidelines](#typescript-guidelines)
+
+---
+
+## File Naming
+
+All files use **kebab-case** (lowercase with hyphens).
+
+```
+✅ Good
+user-profile.tsx
+use-auth.ts
+format-currency.ts
+client-keys.ts
+auth.types.ts
+
+❌ Bad
+UserProfile.tsx
+useAuth.ts
+formatCurrency.ts
+ClientKeys.ts
+```
+
+### File naming patterns by type:
+
+| Type         | Pattern              | Example           |
+| ------------ | -------------------- | ----------------- |
+| Components   | `component-name.tsx` | `client-card.tsx` |
+| Hooks        | `use-hook-name.ts`   | `use-debounce.ts` |
+| Utilities    | `utility-name.ts`    | `format-date.ts`  |
+| Types        | `feature.types.ts`   | `client.types.ts` |
+| API services | `feature-api.ts`     | `clients-api.ts`  |
+| Query keys   | `feature-keys.ts`    | `client-keys.ts`  |
+| Stores       | `feature-store.ts`   | `client-store.ts` |
+
+---
+
+## Function Declarations
+
+We use different function styles for different purposes:
+
+### Regular functions for:
+
+- React components
+- Custom hooks
+- Main/exported functions
+- Helper functions
+- Utility functions
+
+```typescript
+// ✅ Components
+function UserProfile({ userId }: UserProfileProps) {
+  return <div>...</div>
+}
+
+// ✅ Hooks
+function useDebounce<T>(value: T, delay: number): T {
+  // ...
+}
+
+// ✅ Utilities
+function formatCurrency(amount: number, currency: string): string {
+  // ...
+}
+
+// ✅ Helper functions inside components
+function calculateTotal(items: Item[]) {
+  return items.reduce((sum, item) => sum + item.price, 0)
+}
+
+// ✅ Event handlers
+function handleClick() {
+  // ...
+};
+
+function handleSubmit(event: FormEvent) {
+  event.preventDefault();
+  // ...
+};
+```
+
+### Arrow functions for:
+
+- Callbacks (onClick, onChange, map, filter, etc.)
+- Inline functions passed as props
+- Event handlers defined inside components
+
+```typescript
+// ✅ Array callbacks
+const activeUsers = users.filter(user => user.isActive);
+
+const userNames = users.map(user => user.name);
+
+// ✅ Callbacks passed to hooks
+useEffect(() => {
+  // ...
+}, [dependency]);
+```
+
+### Why this convention?
+
+1. **Hoisting**: Regular functions are hoisted, making code organization more flexible
+2. **Readability**: Clear visual distinction between "main" code and callbacks
+3. **Debugging**: Regular functions have proper names in stack traces
+4. **Consistency**: Team members know what to expect
+
+---
+
+## Variable Naming
+
+### Be descriptive — avoid abbreviations
+
+```typescript
+// ❌ Bad
+const [d, setD] = useState([]);
+const usr = await fetchUser();
+function calc(a, b) {
+  return a + b;
+}
+items.forEach((e, i) => console.log(i, e));
+
+// ✅ Good
+const [clients, setClients] = useState<Client[]>([]);
+const user = await fetchUser();
+function calculateTotal(subtotal: number, taxRate: number) {
+  return subtotal * (1 + taxRate);
+}
+items.forEach((item, index) => console.log(index, item));
+```
+
+### Naming patterns
+
+| Context            | Pattern                    | Example                                       |
+| ------------------ | -------------------------- | --------------------------------------------- |
+| Boolean state      | `is/has/should` prefix     | `isLoading`, `hasError`, `shouldRefetch`      |
+| Event handlers     | `handle` prefix            | `handleClick`, `handleSubmit`, `handleChange` |
+| Callbacks as props | `on` prefix                | `onClick`, `onSubmit`, `onChange`             |
+| Arrays             | Plural nouns               | `users`, `items`, `notifications`             |
+| Counts             | Noun + `Count`             | `userCount`, `itemCount`                      |
+| Maps/Records       | Noun + `Map` or `By` + Key | `userMap`, `usersById`                        |
+
+### Accepted short names
+
+These are acceptable due to widespread convention:
+
+- `id` — identifier
+- `url` — URL
+- `api` — API
+- `db` — database (in backend contexts)
+- `x, y, z` — coordinates
+- `i, j, k` — loop indices (only in simple numerical loops)
+
+---
+
+## Project Structure
+
+We use a **feature-first architecture** for frontend and **domain-based organization** for Convex backend:
+
+```
+project-root/
+├── app/                           # Expo Router (screens only)
+│   ├── (auth)/                    # Auth flow
+│   ├── (protected)/               # Authenticated routes
+│   └── users/                     # Dynamic routes
+│       └── [id].tsx
+│
+├── convex/                        # Backend (domain-based)
+│   ├── _generated/
+│   ├── schema.ts
+│   ├── http.ts
+│   │
+│   ├── users/                     # User domain
+│   │   ├── queries.ts            # All user queries
+│   │   ├── mutations.ts          # All user mutations
+│   │   ├── internal.ts           # Internal-only functions
+│   │   └── helpers.ts            # Shared helpers (not exported)
+│   │
+│   └── messages/                  # Message domain
+│       ├── queries.ts
+│       ├── mutations.ts
+│       └── helpers.ts
+│
+├── features/                      # Frontend features (vertical slices)
+│   └── {feature}/
+│       ├── components/           # Feature components
+│       ├── hooks/                # Convex wrappers + logic
+│       ├── stores/               # UI state only (NOT server data)
+│       ├── types/                # TypeScript types
+│       └── index.ts              # Public exports
+│
+├── components/                    # Shared components
+│   ├── ui/                       # UI primitives (RN Reusables)
+│   ├── layout/                   # Layout components
+│   └── shared/                   # Shared business components
+│
+├── hooks/                         # Shared hooks
+├── stores/                        # Global Zustand stores
+├── lib/                           # Utilities
+├── types/                         # Shared types
+└── providers/                     # Context providers
+```
+
+### Import rules
+
+```typescript
+// ✅ Import from feature's public API
+import { UserCard, useUserList } from '@/features/users';
+
+// ✅ Import Convex functions
+import { api } from '@/convex/_generated/api';
+import { useQuery, useMutation } from 'convex/react';
+
+// ✅ Import UI components
+import { Button } from '@/components/ui/button';
+import { ScreenWrapper } from '@/components/layout/screen-wrapper';
+
+// ❌ Never import internal modules
+import { UserCardInternal } from '@/features/users/components/internal/user-card';
+
+// ❌ Never import Convex helpers directly
+import { getCurrentUser } from '@/convex/users/helpers';
+```
+
+### Feature Index Export Patterns
+
+**Decision Rule: Count files in each subfolder**
+
+```
+Algorithm:
+1. For each subfolder (hooks/, components/, types/, stores/)
+2. Count number of files
+3. IF any subfolder has >= 10 files:
+     USE Pattern B (Subfolder Indexes)
+   ELSE:
+     USE Pattern A (Explicit Exports)
+```
+
+#### Pattern A: Explicit Exports (Small Features)
+
+Use when **all subfolders have <10 files**.
+
+```typescript
+// features/users/index.ts
+// Subfolder file counts: hooks=2, components=0, types=1, stores=0
+// Max count = 2 < 10, so use explicit exports
+
+export { useCurrentUser } from './hooks/use-current-user';
+export { useUpdateDisplayName } from './hooks/use-update-display-name';
+export type { User } from './types/user.types';
+```
+
+**Advantages:**
+- ✅ Clear public API at a glance
+- ✅ Better IDE "Go to Definition" (direct to file)
+- ✅ Easier code review
+- ✅ Better tree-shaking
+
+**Use this pattern when:**
+- Feature is small to medium
+- All subfolders have <10 files
+- You want explicit control over public API
+
+#### Pattern B: Subfolder Indexes (Large Features)
+
+Use when **any subfolder has 10+ files**.
+
+```typescript
+// features/projects/hooks/index.ts
+// hooks/ has 15 files, so add subfolder index
+export { useProjects } from './use-projects';
+export { useProject } from './use-project';
+export { useCreateProject } from './use-create-project';
+export { useUpdateProject } from './use-update-project';
+export { useDeleteProject } from './use-delete-project';
+export { useProjectMembers } from './use-project-members';
+export { useProjectSettings } from './use-project-settings';
+export { useProjectTasks } from './use-project-tasks';
+export { useProjectFiles } from './use-project-files';
+export { useProjectActivity } from './use-project-activity';
+export { useProjectAnalytics } from './use-project-analytics';
+export { useProjectExport } from './use-project-export';
+export { useProjectImport } from './use-project-import';
+export { useProjectShare } from './use-project-share';
+export { useProjectArchive } from './use-project-archive';
+
+// features/projects/components/index.ts
+// components/ has 12 files
+export { ProjectCard } from './project-card';
+export { ProjectList } from './project-list';
+// ... 10 more exports
+
+// features/projects/index.ts (root)
+// Just re-export from subfolder indexes
+export * from './hooks';
+export * from './components';
+export type * from './types';
+```
+
+**Advantages:**
+- ✅ Less maintenance for large features
+- ✅ Easy to add new files (just update subfolder index)
+- ✅ Organized by domain
+
+**Use this pattern when:**
+- ANY subfolder reaches 10+ files
+- Feature is large/complex
+- Public API changes frequently
+
+#### Anti-Pattern: Premature Subfolder Indexes
+
+```typescript
+// ❌ BAD: Unnecessary indirection for 2 files
+// features/users/hooks/index.ts (only 2 hooks!)
+export * from './use-current-user';
+export * from './use-update-display-name';
+
+// features/users/index.ts
+export * from './hooks';  // Extra hop for IDE navigation
+
+// ✅ GOOD: Direct exports for small features
+// features/users/index.ts
+export { useCurrentUser } from './hooks/use-current-user';
+export { useUpdateDisplayName } from './hooks/use-update-display-name';
+```
+
+**Problems with premature subfolder indexes:**
+- Adds unnecessary files
+- Slower IDE navigation (extra hop)
+- Harder to see full public API
+- No benefit for small features
+- Complexity without gain
+
+---
+
+## Import Order
+
+Organize imports in this order, with blank lines between groups:
+
+```typescript
+// 1. React
+import { useState, useEffect, memo } from 'react';
+
+// 2. React Native
+import { View, Text, Pressable } from 'react-native';
+
+// 3. Navigation
+import { Stack, router } from 'expo-router';
+
+// 4. External libraries
+import { useQuery, useMutation } from 'convex/react';
+import { z } from 'zod';
+
+// 5. Convex
+import { api } from '@/convex/_generated/api';
+import type { Id } from '@/convex/_generated/dataModel';
+
+// 6. UI components
+import { Button, Card, Input } from '@/components/ui';
+
+// 7. Layout components
+import { ScreenWrapper } from '@/components/layout/screen-wrapper';
+
+// 8. Features (via barrel exports)
+import { UserCard, useUserList } from '@/features/users';
+
+// 9. Shared utilities
+import { formatDate, cn } from '@/lib/utils';
+
+// 10. Relative imports (same feature)
+import { UserAvatar } from './components/user-avatar';
+import type { UserFormValues } from './types/user.types';
+
+// 11. Types (always last, using `import type`)
+import type { ReactNode } from 'react';
+```
+
+---
+
+## State Management
+
+### Decision tree
+
+| Question                                  | Answer            |
+| ----------------------------------------- | ----------------- |
+| Is it from the database (Convex)?        | → Convex hooks    |
+| Is it shared UI state?                   | → Zustand         |
+| Is it form data?                         | → React Hook Form |
+| Is it only used in one component?        | → useState        |
+| Is it navigation state?                  | → Expo Router     |
+
+### Convex (Server State)
+
+Use Convex hooks for ALL database data:
+
+```typescript
+// features/users/hooks/use-user-data.ts
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+
+export function useUserList(search?: string) {
+  return useQuery(api.users.queries.list, { search });
+}
+
+export function useUpdateUser() {
+  return useMutation(api.users.mutations.update);
+}
+
+// Usage in component
+function UserList() {
+  const users = useQuery(api.users.queries.list, { search: '' });
+
+  // undefined = loading
+  if (users === undefined) {
+    return <LoadingSpinner />;
+  }
+
+  // null = no data
+  if (users === null) {
+    return <EmptyState />;
+  }
+
+  return <FlashList data={users} />;
+}
+```
+
+### Zustand (UI State Only)
+
+Use for shared UI state like modals, sheets, filters:
+
+```typescript
+// features/users/stores/user-ui-store.ts
+import { create } from 'zustand';
+
+interface UserUIState {
+  searchQuery: string;
+  isDeleteSheetOpen: boolean;
+  deleteTargetId: string | null;
+}
+
+interface UserUIActions {
+  setSearchQuery: (query: string) => void;
+  openDeleteSheet: (userId: string) => void;
+  closeDeleteSheet: () => void;
+}
+
+export const useUserUIStore = create<UserUIState & UserUIActions>(set => ({
+  searchQuery: '',
+  isDeleteSheetOpen: false,
+  deleteTargetId: null,
+
+  setSearchQuery: query => set({ searchQuery: query }),
+  openDeleteSheet: userId =>
+    set({ isDeleteSheetOpen: true, deleteTargetId: userId }),
+  closeDeleteSheet: () =>
+    set({ isDeleteSheetOpen: false, deleteTargetId: null }),
+}));
+```
+
+### Avoiding Props Drilling
+
+**Never pass props through multiple component levels.** If a prop needs to pass through 2+ components that don't use it, refactor:
+
+```typescript
+// ❌ Bad: Props drilling
+<Parent userId={id}>
+  <Layout userId={id}>        // doesn't use userId
+    <Container userId={id}>   // doesn't use userId
+      <UserCard userId={id} /> // finally uses it
+    </Container>
+  </Layout>
+</Parent>
+
+// ✅ Good: Call Convex directly
+function UserCard({ userId }: { userId: Id<'users'> }) {
+  const user = useQuery(api.users.queries.getById, { userId });
+  // Direct access, no drilling
+}
+```
+
+### Never do:
+
+```typescript
+// ❌ Don't duplicate Convex data in local state
+const [users, setUsers] = useState([]);
+const convexUsers = useQuery(api.users.queries.list);
+useEffect(() => {
+  if (convexUsers) setUsers(convexUsers);
+}, [convexUsers]);
+
+// ✅ Use Convex data directly
+const users = useQuery(api.users.queries.list);
+```
+
+---
+
+## DRY Principle (Don't Repeat Yourself)
+
+**Always look for opportunities to extract and reuse code.**
+
+### Extract repeated logic into hooks
+
+```typescript
+// ✅ Good: Reusable hook
+function useDebouncedSearch(defaultValue = '') {
+  const [search, setSearch] = useState(defaultValue);
+  const debouncedSearch = useDebounce(search, 300);
+  return { search, setSearch, debouncedSearch };
+}
+```
+
+### Extract repeated UI into components
+
+```typescript
+// ✅ Good: Reusable component
+function StatusCard({ title, status, children }: StatusCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <Badge>{status}</Badge>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
+```
+
+### Extract repeated constants
+
+```typescript
+// ✅ Good: Centralized validation
+export const commonSchemas = {
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/),
+};
+```
+
+### Before writing code, ask:
+
+1. Does similar code exist elsewhere?
+2. Will I need this logic again?
+3. Is this UI pattern used elsewhere?
+4. Are these values used elsewhere?
+
+---
+
+## Conditional Logic
+
+### Avoid nested ternaries
+
+```typescript
+// ❌ Bad
+const color = status === 'active' ? 'green' : status === 'pending' ? 'yellow' : 'gray';
+
+// ✅ Good: Object lookup
+const STATUS_COLORS = {
+  active: 'green',
+  pending: 'yellow',
+  inactive: 'gray',
+} as const;
+
+const color = STATUS_COLORS[status] ?? 'gray';
+```
+
+### Use early returns
+
+```typescript
+// ❌ Bad: deeply nested
+function processUser(user: User | null) {
+  if (user) {
+    if (user.isActive) {
+      if (user.hasPermission) {
+        return doSomething(user);
+      }
+    }
+  }
+  return null;
+}
+
+// ✅ Good: early returns
+function processUser(user: User | null) {
+  if (!user) return null;
+  if (!user.isActive) return null;
+  if (!user.hasPermission) return null;
+
+  return doSomething(user);
+}
+```
+
+### Object maps for multiple conditions
+
+```typescript
+// ❌ Bad: long if/else
+function getIcon(type: string) {
+  if (type === 'success') return <CheckIcon />
+  else if (type === 'error') return <XIcon />
+  else if (type === 'warning') return <AlertIcon />
+  return <InfoIcon />
+}
+
+// ✅ Good: object map
+const ICONS = {
+  success: CheckIcon,
+  error: XIcon,
+  warning: AlertIcon,
+  info: InfoIcon,
+} as const
+
+function getIcon(type: keyof typeof ICONS) {
+  const Icon = ICONS[type]
+  return <Icon />
+}
+```
+
+---
+
+## Component Patterns
+
+### Basic structure
+
+```typescript
+// features/users/components/user-card.tsx
+import { memo } from 'react';
+import { View, Pressable } from 'react-native';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Text } from '@/components/ui/text';
+import { Button } from '@/components/ui/button';
+import type { Id } from '@/convex/_generated/dataModel';
+
+// ─────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────
+
+interface UserCardProps {
+  user: {
+    _id: Id<'users'>;
+    displayName: string;
+    email?: string;
+    avatarUrl?: string;
+  };
+  onPress?: (userId: Id<'users'>) => void;
+}
+
+// ─────────────────────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────────────────────
+
+function UserCardComponent({ user, onPress }: UserCardProps) {
+  function handlePress() {
+    onPress?.(user._id);
+  }
+
+  return (
+    <Pressable onPress={handlePress}>
+      <Card>
+        <CardContent className="flex-row items-center gap-3 p-4">
+          <Avatar>
+            <AvatarImage source={{ uri: user.avatarUrl }} />
+            <AvatarFallback>
+              <Text>{user.displayName[0]?.toUpperCase()}</Text>
+            </AvatarFallback>
+          </Avatar>
+          <View className="flex-1">
+            <Text className="font-semibold">{user.displayName}</Text>
+            {user.email && (
+              <Text className="text-sm text-muted-foreground">{user.email}</Text>
+            )}
+          </View>
+        </CardContent>
+      </Card>
+    </Pressable>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────────────────────────
+
+export const UserCard = memo(UserCardComponent);
+```
+
+### Loading states with Convex
+
+```typescript
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { FlashList } from '@shopify/flash-list';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/text';
+
+function UserList() {
+  const users = useQuery(api.users.queries.list);
+
+  // undefined = loading
+  if (users === undefined) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-muted-foreground">Loading...</Text>
+      </View>
+    );
+  }
+
+  // Empty state
+  if (users.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-muted-foreground">No users found</Text>
+      </View>
+    );
+  }
+
+  return (
+    <FlashList
+      data={users}
+      renderItem={({ item }) => <UserCard user={item} />}
+      keyExtractor={item => item._id}
+      estimatedItemSize={80}
+    />
+  );
+}
+```
+
+---
+
+## TypeScript Guidelines
+
+### Use Convex auto-generated types
+
+Convex automatically generates types from your schema. **Never manually duplicate them.**
+
+```typescript
+// ✅ CORRECT - Use Convex's Doc<> type
+import { Doc } from '@/convex/_generated/dataModel';
+
+export type User = Doc<'users'>;
+
+// ❌ WRONG - Manual duplication (gets out of sync)
+export type User = {
+  _id: Id<'users'>;
+  _creationTime: number;
+  clerkId: string;
+  displayName: string;
+  email?: string;
+  avatarUrl?: string;
+};
+```
+
+**Why use Doc<>:**
+- Single source of truth (schema is the only definition)
+- Auto-updates when schema changes
+- Includes system fields (`_id`, `_creationTime`)
+- Full TypeScript safety from database to client
+
+### Prefer `interface` for object shapes
+
+```typescript
+// ✅ For object shapes (extendable)
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// ✅ For union types
+type Status = 'active' | 'inactive' | 'pending';
+
+// ✅ For function types
+type FormatFn = (value: number) => string;
+```
+
+### Use `import type` for type-only imports
+
+```typescript
+// ✅ Good
+import type { User, Client } from './types';
+import type { FC, ReactNode } from 'react';
+
+// ❌ Avoid mixing runtime and type imports
+import { User, formatUser } from './types';
+```
+
+### Avoid `any`
+
+```typescript
+// ❌ Bad
+function process(data: any) { ... }
+
+// ✅ Good
+function process(data: unknown) { ... }
+function process<T>(data: T) { ... }
+function process(data: Record<string, unknown>) { ... }
+```
+
+### Const assertions for literal types
+
+```typescript
+// ✅ Good
+const STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const;
+
+type Status = (typeof STATUS)[keyof typeof STATUS];
+// Result: 'active' | 'inactive'
+```
+
+---
+
+## Quick Reference Card
+
+| Concept             | Convention              |
+| ------------------- | ----------------------- |
+| File names          | `kebab-case.tsx`        |
+| Components          | Regular function        |
+| Hooks               | Regular function        |
+| Callbacks           | Arrow function          |
+| Event handlers      | `handle` prefix         |
+| Props callbacks     | `on` prefix             |
+| Server state        | Convex hooks            |
+| UI state            | Zustand or useState     |
+| Navigation          | Expo Router             |
+| Lists               | FlashList (not FlatList)|
+| Styling             | NativeWind (Tailwind)   |
+| Multiple conditions | Object map              |
+| Guard clauses       | Early returns           |
+| Types for objects   | `interface`             |
+| Types for unions    | `type`                  |
+| Database types      | `Doc<'tableName'>`      |
+| Convex functions    | Always include validators|

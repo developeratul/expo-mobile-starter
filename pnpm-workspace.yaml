@@ -1,0 +1,10 @@
+ignoredBuiltDependencies:
+  - browser-tabs-lock
+  - bufferutil
+  - core-js
+  - esbuild
+  - react-native-nitro-modules
+  - utf-8-validate
+
+onlyBuiltDependencies:
+  - '@clerk/shared'
