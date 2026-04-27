@@ -13,7 +13,11 @@ export default function ProtectedRoutesLayout() {
     return <Redirect href="/welcome" />;
   }
 
-  if (user && !user.hasCompletedOnboarding) {
+  if (!user) {
+    return <LoadingState />;
+  }
+
+  if (!user.hasCompletedOnboarding) {
     return <Redirect href="/(onboarding)/name" />;
   }
 

@@ -10,7 +10,10 @@ export default function Index() {
   }
 
   if (status === 'authenticated') {
-    if (user && !user.hasCompletedOnboarding) {
+    if (!user) {
+      return <LoadingState />;
+    }
+    if (!user.hasCompletedOnboarding) {
       return <Redirect href="/(onboarding)/name" />;
     }
     return <Redirect href="/(protected)" />;
