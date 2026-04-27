@@ -30,6 +30,7 @@ If you already used `.env.development`, rename it to `.env.local` or merge its v
 
 | Variable | Where to get it |
 |----------|-----------------|
+| `APP_ENV` | `local`, `staging`, or `production`; omit to default to `local` (see `env.js`) |
 | `EXPO_PUBLIC_CONVEX_URL` | Convex dashboard after `pnpm convex:dev` |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Dashboard → API Keys |
 | `CONVEX_DEPLOYMENT` | Shown when you run Convex dev, or project settings |
