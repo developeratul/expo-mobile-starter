@@ -1,4 +1,6 @@
-import { useCurrentUser, useStoreUserEffect } from '@/features/users';
+import { useCurrentUser } from '@/features/users';
+import { useAuth } from '@clerk/clerk-expo';
+import { useConvexAuth } from 'convex/react';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 type AuthStatus = 'loading' | 'unauthenticated' | 'authenticated';
@@ -10,20 +12,19 @@ type AuthState = {
 
 const AuthStateContext = createContext<AuthState | undefined>(undefined);
 
-/**
- * useStoreUserEffect is the single source of truth for auth state.
- * @see https://docs.convex.dev/auth/database-auth#calling-the-store-user-mutation-from-react
- */
 export function AuthStateProvider({ children }: { children: ReactNode }) {
-  const { isLoading, isAuthenticated: userStored } = useStoreUserEffect();
+  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoading: convexLoading, isAuthenticated: convexAuthenticated } =
+    useConvexAuth();
   const { user } = useCurrentUser();
 
   const status = useMemo<AuthStatus>(() => {
-    if (isLoading) return 'loading';
-    if (!userStored) return 'unauthenticated';
-    if (user === undefined || user === null) return 'loading';
+    if (!isLoaded) return 'loading';
+    if (!isSignedIn) return 'unauthenticated';
+    if (convexLoading || !convexAuthenticated) return 'loading';
+    if (user === undefined) return 'loading';
     return 'authenticated';
-  }, [isLoading, userStored, user]);
+  }, [isLoaded, isSignedIn, convexLoading, convexAuthenticated, user]);
 
   const authState = useMemo<AuthState>(() => ({ status, user }), [status, user]);
 

@@ -3,12 +3,12 @@ import { ClientEnv } from "./env";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Expo Mobile Starter',
-  slug: 'expo-mobile-starter',
+  name: 'Claire',
+  slug: 'claire',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'expomobilestarter',
+  scheme: 'claire',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
   splash: {
