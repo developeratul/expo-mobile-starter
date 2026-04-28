@@ -31,7 +31,7 @@ const expenseDraftMissingField = v.union(
   v.literal("occurredAt"),
 );
 
-const expenseSource = v.union(
+const expenseCreatedVia = v.union(
   v.literal("whatsapp"),
   v.literal("app"),
   v.literal("manual"),
@@ -122,7 +122,7 @@ export default defineSchema({
     merchant: v.optional(v.string()),
     note: v.optional(v.string()),
     occurredAt: v.number(),
-    source: expenseSource,
+    createdVia: expenseCreatedVia,
     sourceMessageId: v.optional(v.id("chatMessages")),
     sourceDraftId: v.optional(v.id("expenseDrafts")),
     confidence: v.optional(v.number()),
