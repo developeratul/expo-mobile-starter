@@ -1,17 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-const messagingProvider = v.union(v.literal("whatsapp"));
-
 const chatMessageRole = v.union(
   v.literal("user"),
   v.literal("assistant"),
-  v.literal("system"),
-);
-
-const chatMessageSource = v.union(
-  v.literal("whatsapp"),
-  v.literal("app"),
   v.literal("system"),
 );
 
@@ -32,8 +24,7 @@ const expenseDraftMissingField = v.union(
 );
 
 const expenseCreatedVia = v.union(
-  v.literal("whatsapp"),
-  v.literal("app"),
+  v.literal("chat"),
   v.literal("manual"),
 );
 
@@ -48,33 +39,16 @@ export default defineSchema({
     .index('by_clerkId', ['clerkId'])
     .index('by_email', ['email']),
 
-  messagingIdentities: defineTable({
-    userId: v.id("users"),
-    provider: messagingProvider,
-    providerUserId: v.string(),
-    phoneE164: v.optional(v.string()),
-    displayName: v.optional(v.string()),
-    isVerified: v.boolean(),
-    linkedAt: v.number(),
-    lastInboundAt: v.optional(v.number()),
-    lastOutboundAt: v.optional(v.number()),
-  })
-    .index("by_userId", ["userId"])
-    .index("by_provider_and_providerUserId", ["provider", "providerUserId"])
-    .index("by_phoneE164", ["phoneE164"]),
-
   chatThreads: defineTable({
     userId: v.id("users"),
-    messagingIdentityId: v.id("messagingIdentities"),
-    provider: messagingProvider,
+    title: v.optional(v.string()),
     status: v.union(v.literal("active"), v.literal("archived")),
     contextSummary: v.optional(v.string()),
     contextSummaryUpdatedAt: v.optional(v.number()),
     lastMessageAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"])
-    .index("by_messagingIdentityId", ["messagingIdentityId"])
-    .index("by_userId_and_provider", ["userId", "provider"])
+    .index("by_userId_and_status", ["userId", "status"])
     .index("by_lastMessageAt", ["lastMessageAt"]),
 
   chatMessages: defineTable({
@@ -82,8 +56,6 @@ export default defineSchema({
     userId: v.id("users"),
     role: chatMessageRole,
     content: v.string(),
-    source: chatMessageSource,
-    providerMessageId: v.optional(v.string()),
     intent: v.optional(chatMessageIntent),
     expenseId: v.optional(v.id("expenses")),
     expenseDraftId: v.optional(v.id("expenseDrafts")),
@@ -91,7 +63,6 @@ export default defineSchema({
   })
     .index("by_threadId", ["threadId"])
     .index("by_userId", ["userId"])
-    .index("by_providerMessageId", ["providerMessageId"])
     .index("by_retainedUntil", ["retainedUntil"]),
 
   expenseDrafts: defineTable({
