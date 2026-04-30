@@ -24,7 +24,10 @@ const buildTime = z.object({
 // These should be set in:
 // 1. .env.local (for local Convex dev)
 // 2. Convex Dashboard → Settings → Environment Variables (for production)
-// Required: CLERK_WEBHOOK_SECRET
+// Required: CLERK_WEBHOOK_SECRET, CLERK_FRONTEND_API_URL
+// Required for AI: GOOGLE_GENERATIVE_AI_API_KEY when AI_PROVIDER=google,
+// OPENAI_API_KEY when AI_PROVIDER=openai.
+// Optional: AI_PROVIDER (defaults to google), AI_MODEL (provider-specific default)
 
 /**
  * @type {Record<keyof z.infer<typeof client> , string | undefined>}

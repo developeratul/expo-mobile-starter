@@ -20,7 +20,8 @@ This document outlines the coding standards for our application. These conventio
 
 ## File Naming
 
-All files use **kebab-case** (lowercase with hyphens).
+Frontend and shared application files use **kebab-case** (lowercase with hyphens).
+Convex backend modules use **snake_case** (lowercase with underscores) because Convex file-based function names cannot use hyphens.
 
 ```
 ✅ Good
@@ -29,12 +30,14 @@ use-auth.ts
 format-currency.ts
 client-keys.ts
 auth.types.ts
+convex/utils/date_time.ts
 
 ❌ Bad
 UserProfile.tsx
 useAuth.ts
 formatCurrency.ts
 ClientKeys.ts
+convex/utils/date-time.ts
 ```
 
 ### File naming patterns by type:
@@ -44,6 +47,7 @@ ClientKeys.ts
 | Components   | `component-name.tsx` | `client-card.tsx` |
 | Hooks        | `use-hook-name.ts`   | `use-debounce.ts` |
 | Utilities    | `utility-name.ts`    | `format-date.ts`  |
+| Convex modules | `module_name.ts`   | `date_time.ts`    |
 | Types        | `feature.types.ts`   | `client.types.ts` |
 | API services | `feature-api.ts`     | `clients-api.ts`  |
 | Query keys   | `feature-keys.ts`    | `client-keys.ts`  |
@@ -828,7 +832,7 @@ type Status = (typeof STATUS)[keyof typeof STATUS];
 
 | Concept             | Convention              |
 | ------------------- | ----------------------- |
-| File names          | `kebab-case.tsx`        |
+| File names          | Frontend/shared `kebab-case.tsx`; Convex `snake_case.ts` |
 | Components          | Regular function        |
 | Hooks               | Regular function        |
 | Callbacks           | Arrow function          |

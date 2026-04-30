@@ -283,7 +283,7 @@ convex/
 |--------|----------|
 | Frontend organization | Feature-based (vertical slices) |
 | Backend organization | Domain-based (split by function type) |
-| File naming | kebab-case.tsx |
+| File naming | Frontend/shared: kebab-case.tsx; Convex modules: snake_case.ts |
 | Function style | Regular functions (not arrow) |
 | Server state | Convex hooks |
 | UI state | Zustand |

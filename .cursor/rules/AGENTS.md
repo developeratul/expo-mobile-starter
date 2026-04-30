@@ -9,7 +9,7 @@
 
 | Aspect         | Standard                                                             |
 | -------------- | -------------------------------------------------------------------- |
-| File naming    | `kebab-case.tsx`, `use-user.ts`, `format-number.ts`                  |
+| File naming    | Frontend/shared: `kebab-case.tsx`; Convex backend modules: `snake_case.ts` |
 | Functions      | Regular functions for main logic, arrow functions for callbacks only |
 | Backend        | Convex — real-time database with type-safe functions                 |
 | State (server) | Convex hooks (`useQuery`, `useMutation`) — auto-syncing             |
@@ -267,7 +267,9 @@ export * from './hooks';  // Unnecessary indirection
 
 ## 2. Naming Conventions
 
-### Files (kebab-case)
+### Files
+
+Use kebab-case for frontend and shared application files. Use snake_case for Convex backend modules because Convex file-based function names cannot use hyphens.
 
 ```
 ✅ CORRECT                    ❌ WRONG
@@ -276,6 +278,7 @@ use-auth.ts                   useAuth.ts
 format-currency.ts            formatCurrency.ts
 client-keys.ts                clientKeys.ts
 auth.types.ts                 auth.types.ts (✅ this is fine)
+convex/utils/date_time.ts      convex/utils/date-time.ts
 ```
 
 ### Functions
@@ -1953,7 +1956,7 @@ Before writing new code, ask:
 
 ### Naming
 
-- [ ] Files use kebab-case
+- [ ] Files use kebab-case, except Convex backend modules which use snake_case
 - [ ] Functions use descriptive names
 - [ ] No single-letter variable names (except standard conventions like `x, y` for coordinates)
 - [ ] Event handlers prefixed with `handle` (e.g., `handleSubmit`)
