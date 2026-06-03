@@ -16,7 +16,7 @@ import {
   goalType,
   notificationType,
   scheduledFrequency,
-} from './budget/validators';
+} from './lib/validators';
 
 export default defineSchema({
   // ─── USERS ────────────────────────────────────────────────────────────────

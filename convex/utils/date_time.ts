@@ -50,6 +50,39 @@ function getTimezoneOffset(timestamp: number, timezone: string) {
   );
 }
 
+// ─── MONTH KEY UTILITIES ──────────────────────────────────────────────────────
+// A "month key" is a string in "YYYY-MM" format used as the primary key for
+// monthly budget data. String comparison works correctly for ordering.
+
+export function getCurrentMonthKey(): string {
+  const now = new Date();
+  return formatMonthKey(now.getUTCFullYear(), now.getUTCMonth() + 1);
+}
+
+export function getMonthKeyFromDate(date: string): string {
+  return date.slice(0, 7);
+}
+
+export function getPreviousMonthKey(monthKey: string): string {
+  const [year, month] = monthKey.split('-').map(Number);
+  const d = new Date(Date.UTC(year, month - 2));
+  return formatMonthKey(d.getUTCFullYear(), d.getUTCMonth() + 1);
+}
+
+export function getNextMonthKey(monthKey: string): string {
+  const [year, month] = monthKey.split('-').map(Number);
+  const d = new Date(Date.UTC(year, month));
+  return formatMonthKey(d.getUTCFullYear(), d.getUTCMonth() + 1);
+}
+
+export function isMonthKeyBefore(a: string, b: string): boolean {
+  return a < b;
+}
+
+function formatMonthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
 function parseLocalDate(localDate: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(localDate);
   if (match === null) {
