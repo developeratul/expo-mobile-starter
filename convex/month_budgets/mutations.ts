@@ -2,6 +2,81 @@ import { ConvexError, v } from 'convex/values';
 import { mutation } from '../_generated/server';
 import { assertBudgetAccess } from '../lib/auth.js';
 import { SYSTEM_CATEGORY_NAMES } from '../lib/constants.js';
+import { getPreviousMonthKey } from '../utils/date_time.js';
+
+/**
+ * Seeds a month's envelope rows by carrying forward each category's available
+ * balance from the previous month as carryOverCents.
+ *
+ * Safe to call multiple times — idempotent by design. Also corrects rows that
+ * were pre-created by transactions landing in the month before it was opened.
+ *
+ * System categories (RTA, Uncategorized) are excluded — they are computed
+ * fresh each month, not rolled over.
+ */
+export const openMonth = mutation({
+  args: {
+    budgetId: v.id('budgets'),
+    monthKey: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await assertBudgetAccess(ctx, args.budgetId, 'editor');
+
+    const prevMonthKey = getPreviousMonthKey(args.monthKey);
+
+    const categories = await ctx.db
+      .query('categories')
+      .withIndex('by_budgetId', q => q.eq('budgetId', args.budgetId))
+      .filter(q =>
+        q.and(q.eq(q.field('isDeleted'), false), q.eq(q.field('isSystem'), false)),
+      )
+      .collect();
+
+    await Promise.all(
+      categories.map(async category => {
+        const [prevRow, currentRow] = await Promise.all([
+          ctx.db
+            .query('monthBudgets')
+            .withIndex('by_categoryId_and_monthKey', q =>
+              q.eq('categoryId', category._id).eq('monthKey', prevMonthKey),
+            )
+            .unique(),
+          ctx.db
+            .query('monthBudgets')
+            .withIndex('by_categoryId_and_monthKey', q =>
+              q.eq('categoryId', category._id).eq('monthKey', args.monthKey),
+            )
+            .unique(),
+        ]);
+
+        const carryOverCents = prevRow?.availableCents ?? 0;
+
+        if (currentRow) {
+          // Row was pre-created by a transaction before this month was opened.
+          // Correct carryOver and recalculate available.
+          await ctx.db.patch(currentRow._id, {
+            carryOverCents,
+            availableCents:
+              carryOverCents + currentRow.assignedCents + currentRow.activityCents,
+          });
+        } else {
+          await ctx.db.insert('monthBudgets', {
+            budgetId: args.budgetId,
+            categoryId: category._id,
+            monthKey: args.monthKey,
+            assignedCents: 0,
+            activityCents: 0,
+            carryOverCents,
+            availableCents: carryOverCents,
+          });
+        }
+      }),
+    );
+
+    return null;
+  },
+});
 
 /**
  * Sets the assigned amount for a category in a given month.
